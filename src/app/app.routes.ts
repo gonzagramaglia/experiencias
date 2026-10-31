@@ -1,7 +1,98 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
-export const routes: Routes = [
+const isBrowser = typeof window !== 'undefined';
+const host = isBrowser ? window.location.hostname.toLowerCase() : '';
+const search = isBrowser ? window.location.search.toLowerCase() : '';
+
+const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+
+// Detección estricta de subdominios (y soporte para pruebas locales con subdominio o ?portal=admin/prestador)
+const isAdminHost =
+  host.startsWith('admin.') ||
+  host.includes('admin.experiencias') ||
+  (isLocalHost && (search.includes('portal=admin') || search.includes('admin=true')));
+
+const isProviderHost =
+  host.startsWith('prestadores.') ||
+  host.includes('prestadores.experiencias') ||
+  (isLocalHost && (search.includes('portal=prestador') || search.includes('prestador=true')));
+
+// ══════════════════════════════════════════════════════════════════════
+// 1. Rutas exclusivas de administración central (admin.experiencias.club)
+// ══════════════════════════════════════════════════════════════════════
+const adminRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/admin-portal/admin-panel.component').then(
+        (m) => m.AdminPanelComponent,
+      ),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/admin-portal/admin-dashboard/admin-dashboard.component').then(
+            (m) => m.AdminDashboardComponent,
+          ),
+      },
+      {
+        path: 'socios',
+        loadComponent: () =>
+          import('./features/admin-portal/admin-members/admin-members.component').then(
+            (m) => m.AdminMembersComponent,
+          ),
+      },
+      {
+        path: 'comprobantes',
+        loadComponent: () =>
+          import('./features/admin-portal/admin-receipts/admin-receipts.component').then(
+            (m) => m.AdminReceiptsComponent,
+          ),
+      },
+      {
+        path: 'postulaciones',
+        loadComponent: () =>
+          import('./features/admin-portal/admin-applications/admin-applications.component').then(
+            (m) => m.AdminApplicationsComponent,
+          ),
+      },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
+  },
+  { path: '**', redirectTo: '' },
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// 2. Rutas exclusivas del portal de prestadores (prestadores.experiencias.club)
+// ══════════════════════════════════════════════════════════════════════
+const providerRoutes: Routes = [
+  {
+    path: '',
+    loadComponent: () =>
+      import('./features/provider-panel/provider-panel.component').then(
+        (m) => m.ProviderPanelComponent,
+      ),
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/provider-panel/provider-dashboard/provider-dashboard.component').then(
+            (m) => m.ProviderDashboardComponent,
+          ),
+      },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
+  },
+  { path: '**', redirectTo: '' },
+];
+
+// ══════════════════════════════════════════════════════════════════════
+// 3. Rutas del portal público principal (experiencias.club)
+// ══════════════════════════════════════════════════════════════════════
+const publicRoutes: Routes = [
   {
     path: '',
     loadComponent: () =>
@@ -23,7 +114,13 @@ export const routes: Routes = [
   },
   {
     path: 'ingresar',
-    loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
+    loadComponent: () =>
+      import('./features/login/login.component').then((m) => m.LoginComponent),
+  },
+  {
+    path: 'login',
+    redirectTo: 'ingresar',
+    pathMatch: 'full',
   },
   {
     path: 'socios',
@@ -31,9 +128,55 @@ export const routes: Routes = [
       import('./features/members/members.component').then((m) => m.MembersComponent),
   },
   {
+    path: 'socios/emergentes',
+    loadComponent: () =>
+      import('./features/members/emerging-member/emerging-member.component').then(
+        (m) => m.EmergingMemberComponent,
+      ),
+  },
+  {
+    path: 'socios/emergentes/ingreso',
+    redirectTo: 'socios/emergentes',
+    pathMatch: 'full',
+  },
+  {
+    path: 'emergentes',
+    redirectTo: 'socios/emergentes',
+    pathMatch: 'full',
+  },
+  {
+    path: 'socios/plenos',
+    loadComponent: () =>
+      import('./features/subscription/subscription.component').then(
+        (m) => m.SubscriptionComponent,
+      ),
+  },
+  {
+    path: 'socios/activar',
+    redirectTo: 'socios/plenos',
+    pathMatch: 'full',
+  },
+  {
+    path: 'activar',
+    redirectTo: 'socios/plenos',
+    pathMatch: 'full',
+  },
+  {
+    path: 'socios/fundadores',
+    loadComponent: () =>
+      import('./features/founders/founders.component').then((m) => m.FoundersComponent),
+  },
+  {
+    path: 'fundadores',
+    redirectTo: 'socios/fundadores',
+    pathMatch: 'full',
+  },
+  {
     path: 'experiencias',
     loadComponent: () =>
-      import('./features/experiences/experiences.component').then((m) => m.ExperiencesComponent),
+      import('./features/experiences/experiences.component').then(
+        (m) => m.ExperiencesComponent,
+      ),
   },
   {
     path: 'experiencias/fotos',
@@ -111,89 +254,19 @@ export const routes: Routes = [
         (m) => m.ExperiencePaymentComponent,
       ),
   },
+
+  // "La web de antes" para prestadores y convocatoria abierta
   {
-    path: 'prestador',
-    loadComponent: () =>
-      import('./features/provider-panel/provider-panel.component').then(
-        (m) => m.ProviderPanelComponent,
-      ),
-    children: [
-      { path: '', redirectTo: 'experiencias', pathMatch: 'full' },
-      {
-        path: 'experiencias',
-        loadComponent: () =>
-          import('./features/provider-panel/provider-experiences/provider-experiences.component').then(
-            (m) => m.ProviderExperiencesComponent,
-          ),
-      },
-      {
-        path: 'experiencias/nueva',
-        loadComponent: () =>
-          import('./features/provider-panel/provider-experience-form/provider-experience-form.component').then(
-            (m) => m.ProviderExperienceFormComponent,
-          ),
-      },
-      {
-        path: 'comprobantes',
-        loadComponent: () =>
-          import('./features/provider-panel/provider-receipts/provider-receipts.component').then(
-            (m) => m.ProviderReceiptsComponent,
-          ),
-      },
-    ],
-  },
-  {
-    path: 'experiencias/prestadores',
+    path: 'prestadores',
     loadComponent: () =>
       import('./features/providers/providers.component').then((m) => m.ProvidersComponent),
   },
   {
-    path: 'prestadores',
-    redirectTo: 'experiencias/prestadores',
+    path: 'experiencias/prestadores',
+    redirectTo: 'prestadores',
     pathMatch: 'full',
   },
-  {
-    path: 'socios/plenos',
-    loadComponent: () =>
-      import('./features/subscription/subscription.component').then((m) => m.SubscriptionComponent),
-  },
-  {
-    path: 'socios/activar',
-    redirectTo: 'socios/plenos',
-    pathMatch: 'full',
-  },
-  {
-    path: 'activar',
-    redirectTo: 'socios/plenos',
-    pathMatch: 'full',
-  },
-  {
-    path: 'socios/fundadores',
-    loadComponent: () =>
-      import('./features/founders/founders.component').then((m) => m.FoundersComponent),
-  },
-  {
-    path: 'fundadores',
-    redirectTo: 'socios/fundadores',
-    pathMatch: 'full',
-  },
-  {
-    path: 'socios/emergentes',
-    loadComponent: () =>
-      import('./features/members/emerging-member/emerging-member.component').then(
-        (m) => m.EmergingMemberComponent,
-      ),
-  },
-  {
-    path: 'socios/emergentes/ingreso',
-    redirectTo: 'socios/emergentes',
-    pathMatch: 'full',
-  },
-  {
-    path: 'emergentes',
-    redirectTo: 'socios/emergentes',
-    pathMatch: 'full',
-  },
+
   {
     path: '404',
     loadComponent: () =>
@@ -205,3 +278,13 @@ export const routes: Routes = [
       import('./features/not-found/not-found.component').then((m) => m.NotFoundComponent),
   },
 ];
+
+// Dependiendo del subdominio en el navegador, se cargan las rutas correspondientes:
+// - admin.experiencias.club -> adminRoutes (raíz redirige a dashboard)
+// - prestadores.experiencias.club -> providerRoutes (raíz redirige a dashboard)
+// - experiencias.club -> publicRoutes (/admin no existe, /prestadores lleva a la web de registro)
+export const routes: Routes = isAdminHost
+  ? adminRoutes
+  : isProviderHost
+    ? providerRoutes
+    : publicRoutes;

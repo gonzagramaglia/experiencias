@@ -1,7 +1,11 @@
 import { Component, input, signal, inject, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { MenuCardComponent, RECOMMENDED_CARD } from './menu-card/menu-card.component';
+import {
+  MenuCardComponent,
+  RECOMMENDED_CARD,
+} from './menu-card/menu-card.component';
 
 export interface BreadcrumbNextStep {
   label: string;
@@ -35,6 +39,7 @@ export class BreadcrumbComponent implements OnInit {
   readonly recommendedCard = RECOMMENDED_CARD;
 
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
 
   readonly items = input<BreadcrumbItem[]>([]);
   readonly activeMobileIndex = signal<number | null>(null);
@@ -162,7 +167,9 @@ export class BreadcrumbComponent implements OnInit {
       event.preventDefault();
       event.stopPropagation();
       this.closeMobileMenu();
-      const previousItem = [...this.items()].reverse().find((item) => item.url);
+      const previousItem = [...this.items()]
+        .reverse()
+        .find((item) => item.url);
       const previousUrl = previousItem?.url ?? '/';
       globalSuppressBreadcrumbHover = true;
       if (typeof window !== 'undefined') {
@@ -224,7 +231,7 @@ export class BreadcrumbComponent implements OnInit {
       return {
         kicker: 'Expediciones',
         steps: [
-          { label: 'Kayak & Sunset El Jumeal', url: '/experiencias/kayak' },
+          { label: 'Kayak & Sunset Dique El Jumeal', url: '/experiencias/kayak' },
           { label: 'Fotos de Travesías', url: '/experiencias/fotos' },
           { label: 'Volver atrás', url: '/' },
         ],
@@ -314,5 +321,23 @@ export class BreadcrumbComponent implements OnInit {
         { label: 'Volver atrás', url: '/' },
       ],
     };
+  }
+
+  canShowBackButton(): boolean {
+    const list = this.items();
+    return !!(list && list.length > 1);
+  }
+
+  goBack(): void {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      this.location.back();
+    } else {
+      const list = this.items();
+      if (list.length > 1 && list[list.length - 2]?.url) {
+        this.router.navigateByUrl(list[list.length - 2].url!);
+      } else {
+        this.router.navigateByUrl('/');
+      }
+    }
   }
 }

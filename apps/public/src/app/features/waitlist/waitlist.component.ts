@@ -390,13 +390,7 @@ export class WaitlistComponent {
       this.newsletter.resetCurrentSubscription();
     }
 
-    const res = await this.newsletter.loginWithEmail(cleanEmail);
-    if (res.alreadyRegisteredSocio) {
-      this.router.navigate(['/ingresar'], {
-        queryParams: { email: cleanEmail, registered: 'true' },
-      });
-      return;
-    }
+    await this.newsletter.loginWithEmail(cleanEmail);
 
     this.email.set('');
     this.router.navigate(['/socios/emergentes'], {

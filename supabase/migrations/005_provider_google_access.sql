@@ -1,4 +1,4 @@
--- Acceso manual al portal prestadores.experiencias.club.
+-- Acceso manual al Portal de Prestadores.experiencias.club.
 -- Para habilitar una cuenta, insertar su email y dejar active = true.
 CREATE TABLE IF NOT EXISTS public.provider_access (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

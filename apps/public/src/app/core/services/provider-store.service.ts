@@ -341,9 +341,10 @@ export class ProviderStoreService {
       return { success: true, message: '' };
     }
 
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://prestadores.experiencias.club';
     const { error } = await this.supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/` },
+      options: { redirectTo: `${origin}/dashboard` },
     });
 
     return error

@@ -30,7 +30,7 @@ describe('FooterComponent', () => {
     expect(compiled.querySelector('.location-place')?.textContent).toContain('Laguna Blanca');
     const providerLink = compiled.querySelector('.footer-provider-link');
     expect(providerLink).toBeTruthy();
-    expect(providerLink?.getAttribute('routerLink')).toBe('/experiencias/prestadores');
+    expect(providerLink?.getAttribute('routerLink')).toBe('/prestadores');
   });
 
   it('should render the black session strip with guest info when not logged in', () => {

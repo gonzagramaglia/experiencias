@@ -1,0 +1,245 @@
+<div class="kayak-section-card form-card">
+  <header class="form-header">
+    <a routerLink="../experiencias" class="back-link">
+      Volver al listado de experiencias
+    </a>
+    <h1 class="card-heading">
+      {{ isEditMode() ? 'Editar Experiencia' : 'Nueva Experiencia para el Club' }}
+    </h1>
+    <p class="card-subheading">
+      Completá la información técnica, fechas y tarifas. Las publicaciones pasan por la revisión y aprobación del equipo editorial antes de salir al público.
+    </p>
+  </header>
+
+  <form [formGroup]="form" class="panel-form">
+    <!-- Basic Information -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        Información General
+      </legend>
+
+      <div class="form-group" [class.has-error]="fieldInvalid('title')">
+        <label for="title" class="form-label">Título principal de la experiencia *</label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          class="form-input"
+          placeholder="Ej: Expedición 4x4 al Campo de Piedra Pómez & Volcanes"
+        />
+        @if (fieldInvalid('title')) {
+          <span class="field-error">Ingresá un título descriptivo (entre 6 y 100 caracteres).</span>
+        }
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" [class.has-error]="fieldInvalid('shortTitle')">
+          <label for="shortTitle" class="form-label">Título corto (para etiquetas o móviles)</label>
+          <input
+            id="shortTitle"
+            type="text"
+            formControlName="shortTitle"
+            class="form-input"
+            placeholder="Ej: Piedra Pómez 4x4"
+          />
+        </div>
+
+        <div class="form-group" [class.has-error]="fieldInvalid('region')">
+          <label for="region" class="form-label">Región turística de Catamarca *</label>
+          <select id="region" formControlName="region" class="form-input form-select">
+            @for (r of regions; track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" [class.has-error]="fieldInvalid('tagline')">
+        <label for="tagline" class="form-label">Bajada o síntesis atractiva (1 frase) *</label>
+        <input
+          id="tagline"
+          type="text"
+          formControlName="tagline"
+          class="form-input"
+          placeholder="Ej: Travesía andina en el laberinto blanco de la Puna a más de 3.000 msnm."
+        />
+        @if (fieldInvalid('tagline')) {
+          <span class="field-error">La bajada es obligatoria (hasta 160 caracteres).</span>
+        }
+      </div>
+
+      <div class="form-group" [class.has-error]="fieldInvalid('description')">
+        <label for="description" class="form-label">Descripción detallada de la propuesta *</label>
+        <textarea
+          id="description"
+          rows="5"
+          formControlName="description"
+          class="form-input form-textarea"
+          placeholder="Describí el itinerario, qué incluye la actividad (equipo, refrigerio, guía certificado), recomendaciones de vestimenta y qué esperar de la experiencia..."
+        ></textarea>
+        @if (fieldInvalid('description')) {
+          <span class="field-error">La descripción debe tener al menos 30 caracteres.</span>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Logistics, Difficulty and Pricing -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        Logística, Cupos y Tarifas
+      </legend>
+
+      <div class="form-row">
+        <div class="form-group" [class.has-error]="fieldInvalid('meetingPoint')">
+          <label for="meetingPoint" class="form-label">Punto de encuentro y salida *</label>
+          <input
+            id="meetingPoint"
+            type="text"
+            formControlName="meetingPoint"
+            class="form-input"
+            placeholder="Ej: Plaza Principal de El Peñón / Club Náutico"
+          />
+        </div>
+
+        <div class="form-group" [class.has-error]="fieldInvalid('durationLabel')">
+          <label for="durationLabel" class="form-label">Duración estimada *</label>
+          <input
+            id="durationLabel"
+            type="text"
+            formControlName="durationLabel"
+            class="form-input"
+            placeholder="Ej: 4 horas / Día completo (10 h)"
+          />
+        </div>
+      </div>
+
+      <div class="form-row form-row-3">
+        <div class="form-group" [class.has-error]="fieldInvalid('difficulty')">
+          <label for="difficulty" class="form-label">Nivel de exigencia física *</label>
+          <select id="difficulty" formControlName="difficulty" class="form-input form-select">
+            @for (d of difficulties; track d) {
+              <option [value]="d">{{ d }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group" [class.has-error]="fieldInvalid('priceArs')">
+          <label for="priceArs" class="form-label">Tarifa por persona ($ ARS) *</label>
+          <input
+            id="priceArs"
+            type="number"
+            formControlName="priceArs"
+            class="form-input"
+            step="500"
+            min="1000"
+          />
+        </div>
+
+        <div class="form-group" [class.has-error]="fieldInvalid('capacityPerDate')">
+          <label for="capacityPerDate" class="form-label">Cupo máximo por fecha *</label>
+          <input
+            id="capacityPerDate"
+            type="number"
+            formControlName="capacityPerDate"
+            class="form-input"
+            min="1"
+            max="60"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- Cover Image Selection -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        Fotografía de Portada
+      </legend>
+
+      <p class="fieldset-hint">Seleccioná una imagen de los paisajes de Catamarca para la portada:</p>
+
+      <div class="preset-covers-grid">
+        @for (preset of presetImages; track preset.url) {
+          <div
+            class="preset-card"
+            [class.is-selected]="selectedCoverImage() === preset.url"
+            (click)="selectedCoverImage.set(preset.url)"
+          >
+            <img [src]="preset.url" [alt]="preset.label" class="preset-img" referrerpolicy="no-referrer" />
+            <div class="preset-overlay">
+              <span class="preset-label">{{ preset.label }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Dates Picker -->
+    <fieldset class="form-fieldset">
+      <legend class="fieldset-legend">
+        Fechas de Salida Programadas
+      </legend>
+
+      <div class="dates-input-row">
+        <div class="date-picker-box">
+          <label for="newDateInput" class="form-label">Seleccionar fecha:</label>
+          <input
+            id="newDateInput"
+            type="date"
+            class="form-input"
+            [value]="newDate()"
+            (input)="newDate.set($any($event.target).value)"
+          />
+        </div>
+        <button type="button" class="add-date-btn" (click)="addDate()">
+          Agregar fecha
+        </button>
+      </div>
+
+      @if (datesError()) {
+        <span class="dates-error">{{ datesError() }}</span>
+      }
+
+      <div class="dates-chips-container">
+        @if (dates().length === 0) {
+          <p class="dates-empty-hint">No hay fechas cargadas aún. Agregá al menos una fecha para poder solicitar publicación.</p>
+        } @else {
+          <div class="chips-list">
+            @for (date of dates(); track date) {
+              <div class="date-chip">
+                <span>{{ date | fecha }}</span>
+                <button type="button" class="chip-remove" (click)="removeDate(date)" title="Quitar fecha">
+                  ✕
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </fieldset>
+
+    <!-- Action Buttons - Rectangulares sobrios -->
+    <div class="form-actions-strip">
+      <a routerLink="../experiencias" class="cancel-btn">
+        Cancelar
+      </a>
+
+      <div class="save-buttons-group">
+        <button
+          type="button"
+          class="draft-btn"
+          (click)="save(false)"
+        >
+          Guardar como Borrador
+        </button>
+
+        <button
+          type="button"
+          class="publish-request-btn"
+          (click)="save(true)"
+        >
+          Guardar y Solicitar Publicación al Admin
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

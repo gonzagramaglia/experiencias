@@ -1,8 +1,6 @@
 import { Component, inject, signal, computed, HostListener } from '@angular/core';
 import { NewsletterService } from '../../core/services/newsletter.service';
 import { ExperienceService } from '../../core/services/experience.service';
-import { PaymentManagerService } from '../../core/services/payment/payment-manager.service';
-import { PaymentGatewayType } from '../../core/models/payment.model';
 import { Experience } from '../../core/models/experience.model';
 
 import { ActivityHistoryService } from '../../core/services/activity-history.service';
@@ -21,7 +19,6 @@ export type ModalType =
   | 'roadmap'
   | 'experiences'
   | 'providers'
-  | 'payments'
   | 'tiers'
   | 'history'
   | 'founder_application'
@@ -51,7 +48,6 @@ export class WaitlistComponent {
   readonly route = inject(ActivatedRoute);
   readonly newsletter = inject(NewsletterService);
   readonly experienceService = inject(ExperienceService);
-  readonly paymentManager = inject(PaymentManagerService);
   readonly activityService = inject(ActivityHistoryService);
 
   constructor() {
@@ -63,7 +59,6 @@ export class WaitlistComponent {
           'roadmap',
           'experiences',
           'providers',
-          'payments',
           'tiers',
           'history',
           'founder_application',
@@ -291,62 +286,6 @@ export class WaitlistComponent {
     }, 150);
   }
 
-  readonly subscribingMembership = signal(false);
-  readonly membershipPaymentSuccess = signal(false);
-
-  openMembershipPayment(tier: 'activo'): void {
-    this.membershipPaymentSuccess.set(false);
-    this.subscribingMembership.set(false);
-    this.openModal('payments');
-  }
-
-  async confirmMembershipPayment(): Promise<void> {
-    if (this.subscribingMembership() || !this.newsletter.isSubscribed()) return;
-    this.subscribingMembership.set(true);
-
-    await new Promise((resolve) => setTimeout(resolve, 650));
-
-    const receiptNumber = 'REC-2026-CAT-0' + Math.floor(100 + Math.random() * 900);
-    this.activityService.addActivity({
-      id: 'act_' + Date.now(),
-      userId: this.newsletter.currentMember()?.id || 'user_current',
-      experienceId: 'membership_monthly',
-      title: 'Membresía Mensual · Socio Pleno (Temporada Inaugural)',
-      region: 'Catamarca · Club de Experiencias',
-      altitude: 'Sede Central',
-      coverImage: '/assets/images/laguna_blanca.jpg',
-      dateLabel: new Intl.DateTimeFormat('es-AR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      }).format(new Date()),
-      status: 'completada',
-      provider: {
-        name: 'EXPERIENCIAS.CLUB Oficial',
-        category: 'Membresía & Cuota Social',
-        contactPhone: '+54 9 3834 89-2104',
-      },
-      receipt: {
-        receiptNumber,
-        transactionId: 'SUB-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
-        gateway: this.paymentManager.activeGatewayType(),
-        gatewayDisplayName: this.paymentManager.activeGateway().displayName,
-        amountArs: 23000,
-        amountUsd: 23,
-        paidAt: new Date().toLocaleString('es-AR'),
-        paymentMethodSummary: `Cuota Mensual · ${this.paymentManager.activeGateway().displayName}`,
-        payerEmail: this.newsletter.currentMember()?.email || 'socio@experiencias.club',
-        payerName: this.newsletter.currentMember()?.fullName || 'Socio Pleno Catamarca',
-        authCode: 'AUTH-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-        status: 'aprobado',
-      },
-      memoriesCount: 0,
-      memoryPhotos: [],
-    });
-
-    this.subscribingMembership.set(false);
-    this.membershipPaymentSuccess.set(true);
-  }
 
   openFounderApplication(): void {
     const member = this.newsletter.currentMember();
@@ -451,13 +390,7 @@ export class WaitlistComponent {
       this.newsletter.resetCurrentSubscription();
     }
 
-    const res = await this.newsletter.loginWithEmail(cleanEmail);
-    if (res.alreadyRegisteredSocio) {
-      this.router.navigate(['/ingresar'], {
-        queryParams: { email: cleanEmail, registered: 'true' },
-      });
-      return;
-    }
+    await this.newsletter.loginWithEmail(cleanEmail);
 
     this.email.set('');
     this.router.navigate(['/socios/emergentes'], {
@@ -474,22 +407,19 @@ export class WaitlistComponent {
   }
 
   shareWhatsApp(): void {
+    const url = location.href;
     const text = encodeURIComponent(
-      `Me sumé como Socio a EXPERIENCIAS.CLUB (Edición Catamarca), el club privado de expediciones andinas y náuticas. ${location.origin}`,
+      `Conocé el Club de Experiencias: expediciones andinas y travesías náuticas en Catamarca. Sumate y descubrí tu próxima experiencia: ${url}`,
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 
   shareX(): void {
     const text = encodeURIComponent(
-      'Acabo de registrarme en EXPERIENCIAS.CLUB (Edición Catamarca) — expediciones andinas y travesías náuticas.',
+      'Club de Experiencias: expediciones andinas y travesías náuticas en Catamarca.',
     );
-    const url = encodeURIComponent(location.origin);
+    const url = encodeURIComponent(location.href);
     window.open(`https://x.com/intent/tweet?text=${text}&url=${url}`, '_blank');
-  }
-
-  selectGateway(type: PaymentGatewayType): void {
-    this.paymentManager.setGateway(type);
   }
 
   submitProvider(): void {

@@ -1,0 +1,301 @@
+<!-- Filter Tabs - Rectangulares sobrias -->
+<div class="exp-filters-nav">
+  <button
+    type="button"
+    class="filter-tab-btn"
+    [class.is-active]="activeTab() === 'todas'"
+    (click)="activeTab.set('todas')"
+  >
+    Todas ({{ store.providerExperiences().length }})
+  </button>
+  <button
+    type="button"
+    class="filter-tab-btn"
+    [class.is-active]="activeTab() === 'publicadas'"
+    (click)="activeTab.set('publicadas')"
+  >
+    Publicadas
+  </button>
+  <button
+    type="button"
+    class="filter-tab-btn"
+    [class.is-active]="activeTab() === 'revision'"
+    (click)="activeTab.set('revision')"
+  >
+    En Moderación Admin
+  </button>
+  <button
+    type="button"
+    class="filter-tab-btn"
+    [class.is-active]="activeTab() === 'borradores'"
+    (click)="activeTab.set('borradores')"
+  >
+    Borradores
+  </button>
+  <button
+    type="button"
+    class="filter-tab-btn"
+    [class.is-active]="activeTab() === 'ocultas'"
+    (click)="activeTab.set('ocultas')"
+  >
+    Ocultas
+  </button>
+</div>
+
+<!-- Feedback Toast -->
+@if (feedbackToast()) {
+  <div class="toast-banner">
+    <span>{{ feedbackToast() }}</span>
+  </div>
+}
+
+<!-- Empty State -->
+@if (rows().length === 0) {
+  <section class="kayak-section-card empty-state-card">
+    <h2 class="card-heading">No se encontraron experiencias</h2>
+    <p class="card-subheading">
+      No tenés experiencias bajo este filtro. Creá una nueva experiencia para enviar al catálogo de Catamarca.
+    </p>
+    <a routerLink="../experiencias/nueva" class="cta-primary-btn">
+      Crear nueva experiencia
+    </a>
+  </section>
+}
+
+<!-- Experiences List - Boxes rectangulares -->
+<ul class="exp-list">
+  @for (row of rows(); track row.experience.id) {
+    <li class="kayak-section-card exp-card">
+      <div class="exp-card-top">
+        <div class="exp-thumb-box">
+          <img
+            [src]="row.experience.coverImage || '/assets/images/catamarca_pomez.jpg'"
+            [alt]="row.experience.title"
+            class="exp-thumb"
+            referrerpolicy="no-referrer"
+          />
+        </div>
+
+        <div class="exp-card-title">
+          <div class="status-row">
+            @switch (row.experience.status) {
+              @case ('publicada') {
+                <span class="exp-status is-live">
+                  Publicada en experiencias.club
+                </span>
+              }
+              @case ('pendiente_publicacion') {
+                <span class="exp-status is-moderation">
+                  Pendiente de Aprobación Admin (Publicar)
+                </span>
+              }
+              @case ('pendiente_ocultar') {
+                <span class="exp-status is-moderation-orange">
+                  Pendiente de Aprobación Admin (Ocultar)
+                </span>
+              }
+              @case ('pendiente_eliminar') {
+                <span class="exp-status is-moderation-red">
+                  Pendiente de Aprobación Admin (Eliminar)
+                </span>
+              }
+              @case ('oculta') {
+                <span class="exp-status is-hidden">
+                  Ocultada / Pausada
+                </span>
+              }
+              @default {
+                <span class="exp-status is-draft">
+                  Borrador Privado
+                </span>
+              }
+            }
+          </div>
+
+          <h2 class="exp-title">{{ row.experience.title }}</h2>
+          <p class="exp-tagline">{{ row.experience.tagline }}</p>
+          <p class="exp-meta">
+            {{ row.experience.region }} · {{ row.experience.durationLabel }} ·
+            <strong>{{ row.experience.priceArs | ars }}</strong> por persona · Dificultad: {{ row.experience.difficulty }}
+          </p>
+        </div>
+
+        <div class="exp-stats">
+          <div class="stat-box">
+            <span class="pay-label">Socios Anotados</span>
+            <strong [class.blue-text]="row.enrolledCount > 0">{{ row.enrolledCount }} personas</strong>
+          </div>
+          <div class="stat-box">
+            <span class="pay-label">Ingresos Confirmados</span>
+            <strong class="text-blue">{{ row.confirmedRevenue | ars }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moderation Status Notice if pending approval -->
+      @if (
+        row.experience.status === 'pendiente_publicacion' ||
+        row.experience.status === 'pendiente_ocultar' ||
+        row.experience.status === 'pendiente_eliminar'
+      ) {
+        <div class="moderation-strip">
+          <div class="mod-strip-text">
+            <span>
+              Solicitud de <strong>{{ row.experience.moderation?.action }}</strong> enviada al Admin de experiencias.club.
+              El público aún no ve los cambios hasta su aprobación.
+            </span>
+          </div>
+          <button
+            type="button"
+            class="sim-approve-btn"
+            (click)="onAdminSimulateApprove(row.experience.id)"
+            title="Simular aprobación inmediata desde el rol de administrador"
+          >
+            Simular Aprobación Admin
+          </button>
+        </div>
+      }
+
+      <!-- Next Dates & Occupancy -->
+      @if (row.nextDates.length) {
+        <div class="exp-dates-section">
+          <span class="dates-label">Próximas salidas programadas:</span>
+          <div class="exp-dates">
+            @for (d of row.nextDates; track d.date) {
+              <div class="exp-date">
+                <span class="exp-date-day">{{ d.date | fecha }}</span>
+                <div
+                  class="exp-date-bar"
+                  role="progressbar"
+                  [attr.aria-valuenow]="d.reserved"
+                  aria-valuemin="0"
+                  [attr.aria-valuemax]="row.experience.capacityPerDate"
+                >
+                  <span
+                    [style.width.%]="(d.reserved / row.experience.capacityPerDate) * 100"
+                    [class.bar-full]="d.reserved >= row.experience.capacityPerDate"
+                  ></span>
+                </div>
+                <span class="exp-date-count">{{ d.reserved }} / {{ row.experience.capacityPerDate }} cupos</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Experience Actions - Botones rectangulares limpios sin iconos excesivos -->
+      <div class="exp-actions">
+        <!-- Edit Experience -->
+        <a [routerLink]="['../experiencias', row.experience.id, 'editar']" class="pay-copy-btn">
+          Editar
+        </a>
+
+        <!-- View Enrolled Members and Receipts -->
+        <a routerLink="../comprobantes" [queryParams]="{ experiencia: row.experience.id }" class="pay-copy-btn">
+          Socios y Comprobantes ({{ row.enrolledCount }})
+        </a>
+
+        <!-- Public Preview Link if published -->
+        @if (row.experience.status === 'publicada') {
+          <a [routerLink]="['/experiencias', row.experience.slug, 'pago']" target="_blank" class="pay-copy-btn text-blue">
+            Ver en la web pública
+          </a>
+        }
+
+        <!-- Publish / Hide Moderation Request -->
+        @if (row.experience.status === 'borrador' || row.experience.status === 'oculta') {
+          <button type="button" class="pay-copy-btn btn-highlight" (click)="onRequestPublish(row.experience)">
+            Solicitar Publicación
+          </button>
+        } @else if (row.experience.status === 'publicada') {
+          <button type="button" class="pay-copy-btn" (click)="openHideModal(row.experience)">
+            Solicitar Ocultar
+          </button>
+        }
+
+        <!-- Delete Experience (Guarded by participant check) -->
+        <button
+          type="button"
+          class="pay-copy-btn btn-danger"
+          (click)="onDeleteClick(row.experience)"
+          [title]="row.canDelete.allowed ? 'Eliminar experiencia' : 'No se puede eliminar porque tiene socios anotados'"
+        >
+          Eliminar
+        </button>
+      </div>
+    </li>
+  }
+</ul>
+
+<!-- Modal: Cannot Delete Warning -->
+@if (deleteErrorModal()) {
+  <div class="modal-backdrop" (click)="deleteErrorModal.set(null)">
+    <div class="modal-card modal-warning" (click)="$event.stopPropagation()">
+      <h3>No se puede eliminar la experiencia</h3>
+      <p class="modal-desc">{{ deleteErrorModal() }}</p>
+      <div class="modal-info-box">
+        <span>
+          Para proteger la reserva de los socios que ya transfirieron o están inscriptos, no está permitido eliminar la experiencia. En su lugar, podés utilizar la opción <strong>"Solicitar Ocultar"</strong> para pausar futuras reservas.
+        </span>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-close-btn" (click)="deleteErrorModal.set(null)">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Confirm Delete (Allowed because 0 enrolled) -->
+@if (selectedExpForDelete()) {
+  <div class="modal-backdrop" (click)="selectedExpForDelete.set(null)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>¿Solicitar eliminación de la experiencia?</h3>
+      <p class="modal-desc">
+        Estás a punto de solicitar la eliminación de <strong>{{ selectedExpForDelete()?.title }}</strong>.
+      </p>
+      <p class="modal-desc-sub">
+        Esta experiencia no cuenta con socios inscriptos. La solicitud se enviará a aprobación del Admin.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel-btn" (click)="selectedExpForDelete.set(null)">
+          Cancelar
+        </button>
+        <button type="button" class="modal-danger-btn" (click)="confirmDelete()">
+          Confirmar Eliminación
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal: Request Hide -->
+@if (hideReasonModal()) {
+  <div class="modal-backdrop" (click)="hideReasonModal.set(null)">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <h3>Solicitar ocultar experiencia</h3>
+      <p class="modal-desc">
+        La experiencia <strong>{{ hideReasonModal()?.title }}</strong> dejará de mostrarse en la web pública de experiencias.club una vez aprobada por el admin.
+      </p>
+      <div class="modal-form-group">
+        <label>Motivo de la pausa / ocultación (opcional):</label>
+        <textarea
+          class="modal-textarea"
+          rows="3"
+          placeholder="Ej: Fin de temporada invernal, mantenimiento de equipos, etc."
+          [value]="hideReasonText()"
+          (input)="hideReasonText.set($any($event.target).value)"
+        ></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="modal-cancel-btn" (click)="hideReasonModal.set(null)">
+          Cancelar
+        </button>
+        <button type="button" class="modal-orange-btn" (click)="confirmHide()">
+          Enviar Solicitud
+        </button>
+      </div>
+    </div>
+  </div>
+}

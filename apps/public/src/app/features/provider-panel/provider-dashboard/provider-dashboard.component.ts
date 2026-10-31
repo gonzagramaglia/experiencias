@@ -27,7 +27,7 @@ import { ArsPipe, FechaPipe } from '../../../shared/pipes/format.pipes';
             </div>
             <h1 class="welcome-name">Hola, {{ provider()?.name || 'Patricio Facundo' }}</h1>
             <p class="welcome-agency">
-              {{ provider()?.agency }} · Cuenta CBU: <code>{{ provider()?.cbuAlias }}</code>
+              {{ provider()?.agency }}
             </p>
           </div>
         </div>
@@ -315,17 +315,20 @@ import { ArsPipe, FechaPipe } from '../../../shared/pipes/format.pipes';
       .welcome-main {
         display: flex;
         align-items: center;
-        gap: 1.25rem;
+        gap: 1.5rem;
       }
       .avatar-ring {
         position: relative;
+        flex-shrink: 0;
       }
       .provider-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 2px;
-        border: 1px solid #80b3ff;
+        width: 96px;
+        height: 96px;
+        border-radius: 4px;
+        border: 2px solid #80b3ff;
+        box-shadow: 0 4px 16px rgba(0, 56, 143, 0.35);
         object-fit: cover;
+        display: block;
       }
       .welcome-text {
         display: flex;
@@ -1063,6 +1066,13 @@ import { ArsPipe, FechaPipe } from '../../../shared/pipes/format.pipes';
         font-weight: 700;
       }
       @media (max-width: 768px) {
+        .welcome-main {
+          gap: 1rem;
+        }
+        .provider-avatar {
+          width: 76px;
+          height: 76px;
+        }
         .dashboard-receipt-modal {
           grid-template-columns: 1fr;
         }

@@ -69,35 +69,38 @@
                   <h3 class="exp-title">{{ exp.title }}</h3>
                   <p class="exp-tagline">{{ exp.tagline }}</p>
 
-                  <div class="exp-meta-row">
-                    <span>{{ exp.durationLabel }}</span>
-                    <span>Dificultad: {{ exp.difficulty }}</span>
-                    <span>Temporada: {{ exp.bestSeason }}</span>
-                  </div>
+                  @if (!exp.isLocked) {
+                    <div class="exp-meta-row">
+                      <span>{{ exp.durationLabel }}</span>
+                      <span>Dificultad: {{ exp.difficulty }}</span>
+                      <span>Temporada: {{ exp.bestSeason }}</span>
+                    </div>
+                  }
 
                   <div class="exp-price-action-row">
-                    <div class="price-box">
-                      <span class="price-val">${{ exp.priceArs.toLocaleString('es-AR') }} ARS</span>
-                      <span class="price-usd">o ${{ exp.priceUsd }} USD</span>
-                    </div>
-
                     @if (exp.isLocked) {
-                    <button class="exp-locked-btn" disabled>
-                      <span>Próximamente</span>
-                    </button>
-                    } @else if (exp.detailRoute) {
-                    <a [routerLink]="exp.detailRoute" class="exp-toggle-details-btn exp-cta-link">
-                      <span>Ver información</span>
-                    </a>
+                      <button class="exp-locked-btn" disabled>
+                        <span>Próximamente</span>
+                      </button>
                     } @else {
-                    <button class="exp-toggle-details-btn" [class.active]="selectedExperience()?.id === exp.id"
-                      (click)="toggleExperienceDetails(exp)">
-                      @if (selectedExperience()?.id === exp.id) {
-                      <span>Ocultar detalles</span>
+                      <div class="price-box">
+                        <span class="price-val">${{ exp.priceArs.toLocaleString('es-AR') }} ARS</span>
+                        <span class="price-usd">o ${{ exp.priceUsd }} USD</span>
+                      </div>
+                      @if (exp.detailRoute) {
+                        <a [routerLink]="exp.detailRoute" class="exp-toggle-details-btn exp-cta-link">
+                          <span>Ver información</span>
+                        </a>
                       } @else {
-                      <span>Ver información</span>
+                        <button class="exp-toggle-details-btn" [class.active]="selectedExperience()?.id === exp.id"
+                          (click)="toggleExperienceDetails(exp)">
+                          @if (selectedExperience()?.id === exp.id) {
+                            <span>Ocultar detalles</span>
+                          } @else {
+                            <span>Ver información</span>
+                          }
+                        </button>
                       }
-                    </button>
                     }
                   </div>
                 </div>
@@ -179,35 +182,38 @@
                     <h3 class="exp-title">{{ exp.title }}</h3>
                     <p class="exp-tagline">{{ exp.tagline }}</p>
 
-                    <div class="exp-meta-row">
-                      <span>{{ exp.durationLabel }}</span>
-                      <span>Dificultad: {{ exp.difficulty }}</span>
-                      <span>Temporada: {{ exp.bestSeason }}</span>
-                    </div>
+                    @if (!exp.isLocked) {
+                      <div class="exp-meta-row">
+                        <span>{{ exp.durationLabel }}</span>
+                        <span>Dificultad: {{ exp.difficulty }}</span>
+                        <span>Temporada: {{ exp.bestSeason }}</span>
+                      </div>
+                    }
 
                     <div class="exp-price-action-row">
-                      <div class="price-box">
-                        <span class="price-val">${{ exp.priceArs.toLocaleString('es-AR') }} ARS</span>
-                        <span class="price-usd">o ${{ exp.priceUsd }} USD</span>
-                      </div>
-
                       @if (exp.isLocked) {
-                      <button class="exp-locked-btn" disabled>
-                        <span>Próximamente</span>
-                      </button>
-                      } @else if (exp.detailRoute) {
-                      <a [routerLink]="exp.detailRoute" class="exp-toggle-details-btn exp-cta-link">
-                        <span>Ver información</span>
-                      </a>
+                        <button class="exp-locked-btn" disabled>
+                          <span>Próximamente</span>
+                        </button>
                       } @else {
-                      <button class="exp-toggle-details-btn" [class.active]="selectedExperience()?.id === exp.id"
-                        (click)="toggleExperienceDetails(exp)">
-                        @if (selectedExperience()?.id === exp.id) {
-                        <span>Ocultar detalles</span>
+                        <div class="price-box">
+                          <span class="price-val">${{ exp.priceArs.toLocaleString('es-AR') }} ARS</span>
+                          <span class="price-usd">o ${{ exp.priceUsd }} USD</span>
+                        </div>
+                        @if (exp.detailRoute) {
+                          <a [routerLink]="exp.detailRoute" class="exp-toggle-details-btn exp-cta-link">
+                            <span>Ver información</span>
+                          </a>
                         } @else {
-                        <span>Ver información</span>
+                          <button class="exp-toggle-details-btn" [class.active]="selectedExperience()?.id === exp.id"
+                            (click)="toggleExperienceDetails(exp)">
+                            @if (selectedExperience()?.id === exp.id) {
+                              <span>Ocultar detalles</span>
+                            } @else {
+                              <span>Ver información</span>
+                            }
+                          </button>
                         }
-                      </button>
                       }
                     </div>
                   </div>
@@ -288,35 +294,12 @@
                 Sumate a nuestra red y recibí socios calificados todo el año.
               </p>
             </div>
-            <a routerLink="/experiencias/prestadores" class="callout-btn">
+            <a routerLink="/prestadores" class="callout-btn">
               <span>Convertirme en Prestador</span>
               <mat-icon class="btn-icon">arrow_forward</mat-icon>
             </a>
           </div>
           }
-        </div>
-
-        <!-- ═══════════════ CARD 4: GALERÍA FOTOGRÁFICA DEL CLUB ═══════════════ -->
-        <div class="exp-section-card gallery-invite-box">
-          <div class="card-inner-header">
-            <span class="section-kicker">GALERÍA FOTOGRÁFICA DEL CLUB</span>
-            <h2 class="card-heading">Conocé nuestras experiencias en imágenes</h2>
-            <p class="card-subheading">
-              Explorá las postales de nuestras travesías andinas y náuticas.
-            </p>
-          </div>
-
-          <div class="gallery-invite-media">
-            <img src="/assets/images/laguna-verde.jpg" alt="Ruta de los Seismiles y Laguna Verde"
-              class="gallery-invite-image" />
-            <span class="gallery-invite-tag">RUTA DE LOS SEISMILES (CATAMARCA)</span>
-          </div>
-
-          <div class="gallery-invite-actions">
-            <a routerLink="/experiencias/fotos" class="gallery-invite-btn secondary">
-              <span>Ver galería de fotos</span>
-            </a>
-          </div>
         </div>
 
         <app-founder-ad />

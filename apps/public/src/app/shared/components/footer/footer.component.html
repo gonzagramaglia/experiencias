@@ -1,35 +1,36 @@
 <!-- Franja Negra pegada al Footer con Información de Sesión y Membresía -->
 @if (!shouldHideSessionBar) {
-  <aside class="footer-session-bar" aria-label="Información de sesión y membresía">
-    <div class="footer-session-container" [class.no-session]="!newsletter.isSubscribed()">
-      <div class="session-action-col">
-        @if (newsletter.isSubscribed()) {
-          <button type="button" class="session-action-btn logout-action logout-btn" (click)="logout()" title="Cerrar sesión activa">
-            Cerrar Sesión
-          </button>
-        } @else {
-          <a routerLink="/ingresar" class="session-action-btn login-action" title="Iniciar sesión con tu cuenta">
-            Iniciar Sesión
-          </a>
-        }
-      </div>
-
+<aside class="footer-session-bar" aria-label="Información de sesión y membresía">
+  <div class="footer-session-container" [class.no-session]="!newsletter.isSubscribed()">
+    <div class="session-action-col">
       @if (newsletter.isSubscribed()) {
-        <div class="session-tier-col">
-          <strong class="session-value">{{ membershipLabel }}</strong>
-        </div>
-
-        <div class="session-user-col">
-          <span class="session-label">Usuario:</span>
-          <strong class="session-value">{{ userDisplay }}</strong>
-        </div>
+      <button type="button" class="session-action-btn logout-action logout-btn" (click)="logout()"
+        title="Cerrar sesión activa">
+        Cerrar Sesión
+      </button>
       } @else {
-        <div class="session-user-col session-tier-fallback">
-          <strong class="session-value">{{ membershipLabel }}</strong>
-        </div>
+      <a routerLink="/ingresar" class="session-action-btn login-action" title="Iniciar sesión con tu cuenta">
+        Iniciar Sesión
+      </a>
       }
     </div>
-  </aside>
+
+    @if (newsletter.isSubscribed()) {
+    <div class="session-tier-col">
+      <strong class="session-value">{{ membershipLabel }}</strong>
+    </div>
+
+    <div class="session-user-col">
+      <span class="session-label">Usuario:</span>
+      <strong class="session-value">{{ userDisplay }}</strong>
+    </div>
+    } @else {
+    <div class="session-user-col session-tier-fallback">
+      <strong class="session-value">{{ membershipLabel }}</strong>
+    </div>
+    }
+  </div>
+</aside>
 }
 
 <!-- Footer Inferior Compartido con la Ubicación Exacta del Wallpaper y Enlaces Oficiales -->
@@ -43,11 +44,12 @@
     </a>
   </div>
   <div class="footer-links">
-    <a routerLink="/experiencias/prestadores" class="footer-provider-link" title="Sé parte de la comunidad de prestadores">
-      Convertirme en Prestador
+    <a href="https://prestadores.experiencias.club" class="footer-provider-link"
+      title="Portal Oficial para Prestadores (prestadores.experiencias.club)" target="_blank" rel="noopener">
+      Portal de Prestadores
     </a>
-    <a href="https://prestadores.experiencias.club" class="footer-provider-link" title="Portal Oficial para Prestadores (prestadores.experiencias.club)" target="_blank" rel="noopener">
-      Portal Prestadores
+    <a routerLink="/prestadores" class="footer-provider-link" title="Sé parte de la comunidad de prestadores">
+      Convertirme en Prestador
     </a>
     <a href="https://www.instagram.com/experiencias.club/" target="_blank" rel="noopener noreferrer"
       class="social-ig-link" title="Instagram oficial de EXPERIENCIAS.CLUB">

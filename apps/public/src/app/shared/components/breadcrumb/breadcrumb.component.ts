@@ -320,4 +320,32 @@ export class BreadcrumbComponent implements OnInit {
       ],
     };
   }
+
+  canShowBackButton(): boolean {
+    const list = this.items();
+    return !!(list && list.length > 1);
+  }
+
+  goBack(): void {
+    const list = this.items();
+    // 1. Navegar al paso jerárquico anterior en el breadcrumb que tenga URL definida
+    if (list && list.length > 1) {
+      for (let i = list.length - 2; i >= 0; i--) {
+        if (list[i]?.url) {
+          this.router.navigateByUrl(list[i].url!);
+          return;
+        }
+      }
+    }
+
+    // 2. Fallback: subir un nivel jerárquico en la URL de la ruta
+    const currentUrl = this.router.url.split('?')[0].split('#')[0];
+    const segments = currentUrl.split('/').filter(Boolean);
+    if (segments.length > 1) {
+      segments.pop();
+      this.router.navigateByUrl('/' + segments.join('/'));
+    } else {
+      this.router.navigateByUrl('/');
+    }
+  }
 }

@@ -88,3 +88,15 @@
     }
   </div>
 </nav>
+
+@if (canShowBackButton()) {
+  <button
+    type="button"
+    class="desktop-floating-back-btn"
+    (click)="goBack()"
+    aria-label="Volver atrás"
+    title="Volver atrás"
+  >
+    <mat-icon class="floating-back-icon">arrow_back</mat-icon>
+  </button>
+}

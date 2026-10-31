@@ -18,7 +18,7 @@ const DEFAULT_PAGE_METADATA = {
   templateUrl: './app.html',
 })
 export class App {
-  protected readonly title = signal('Portal Prestadores · Club de Experiencias');
+  protected readonly title = signal('Club de Experiencias · Catamarca');
   private readonly router = inject(Router);
   private readonly meta = inject(Meta);
   private readonly pageTitle = inject(Title);
@@ -86,8 +86,57 @@ export class App {
   }
 
   private updatePageMetadata(url: string): void {
+    const isBrowser = typeof window !== 'undefined';
+    const host = isBrowser ? window.location.hostname.toLowerCase() : '';
+    const search = isBrowser ? window.location.search.toLowerCase() : '';
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+
+    const isAdminHost =
+      host.startsWith('admin.') ||
+      host.includes('admin.experiencias') ||
+      (isLocalHost && (search.includes('portal=admin') || search.includes('admin=true')));
+
+    const isProviderHost =
+      host.startsWith('prestadores.') ||
+      host.includes('prestadores.experiencias') ||
+      (isLocalHost && (search.includes('portal=prestador') || search.includes('prestador=true')));
+
     const metadata = this.getPageMetadata(url);
-    const title = `Club de Experiencias | ${metadata.section}`;
+    let title = `Club de Experiencias | ${metadata.section}`;
+    let themeColor = '#ffffff';
+
+    if (isAdminHost) {
+      title = 'Portal de Administración · EXPERIENCIAS.CLUB';
+      themeColor = '#ff5f00';
+    } else if (isProviderHost) {
+      title = 'Portal de Prestadores · EXPERIENCIAS.CLUB';
+      themeColor = '#00388f';
+    }
+
+    if (isBrowser) {
+      const iconLinks = document.querySelectorAll<HTMLLinkElement>("link[rel*='icon']");
+      let iconBase = '';
+      if (isAdminHost) {
+        iconBase = '/assets/favicons/admin';
+      } else if (isProviderHost) {
+        iconBase = '/assets/favicons/prestadores';
+      }
+
+      iconLinks.forEach((link) => {
+        const sizes = link.getAttribute('sizes');
+        const rel = link.getAttribute('rel');
+        if (rel === 'apple-touch-icon') {
+          link.href = iconBase ? `${iconBase}/apple-touch-icon.png` : '/apple-touch-icon.png';
+        } else if (sizes === '32x32') {
+          link.href = iconBase ? `${iconBase}/favicon-32x32.png` : '/favicon-32x32.png';
+        } else if (sizes === '16x16') {
+          link.href = iconBase ? `${iconBase}/favicon-16x16.png` : '/favicon-16x16.png';
+        } else {
+          link.href = iconBase ? `${iconBase}/favicon.ico` : '/favicon.ico';
+        }
+      });
+    }
+
     const absoluteUrl =
       typeof window !== 'undefined' ? new URL(url, window.location.origin).href : url;
     const absoluteImage =
@@ -96,6 +145,7 @@ export class App {
         : metadata.image;
 
     this.pageTitle.setTitle(title);
+    this.meta.updateTag({ name: 'theme-color', content: themeColor });
     this.meta.updateTag({ name: 'description', content: metadata.description });
     this.meta.updateTag({ property: 'og:title', content: title });
     this.meta.updateTag({ property: 'og:description', content: metadata.description });
@@ -109,33 +159,49 @@ export class App {
   }
 
   private getPageMetadata(url: string): typeof DEFAULT_PAGE_METADATA {
+    const isBrowser = typeof window !== 'undefined';
+    const host = isBrowser ? window.location.hostname.toLowerCase() : '';
+    const search = isBrowser ? window.location.search.toLowerCase() : '';
+    const isLocalHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.local');
+
+    const isAdminHost =
+      host.startsWith('admin.') ||
+      host.includes('admin.experiencias') ||
+      (isLocalHost && (search.includes('portal=admin') || search.includes('admin=true')));
     const path = url.split('?')[0].split('#')[0];
-    if (path === '/' || path === '') return DEFAULT_PAGE_METADATA;
-    if (path.startsWith('/experiencias/kayak')) {
+
+    if (isAdminHost) {
       return {
-        section: 'Kayak & Sunset en el Dique El Jumeal',
+        section: 'Administración Central',
         description:
-          'Viví una travesía guiada en kayak al atardecer, con aguas calmas y paisaje catamarqueño.',
-        image: '/assets/images/kayak-club-de-experiencias.jpg',
-        imageAlt: 'Travesía en kayak en el Dique El Jumeal',
+          'Supervisión de socios, lista de espera y conciliación de transferencias en admin.experiencias.club.',
+        image: '/assets/images/logo-admin-experiencias-club.png',
+        imageAlt: 'Administración EXPERIENCIAS.CLUB',
       };
     }
-    if (path.startsWith('/experiencias')) {
+    if (path.startsWith('/prestadores')) {
       return {
-        section: 'Experiencias en Catamarca',
-        description:
-          'Explorá experiencias privadas: kayak, expediciones andinas y travesías únicas en Catamarca.',
+        section: 'Comunidad de Prestadores & Guías Locales',
+        description: 'Sumate como guía o prestador de expediciones en Catamarca.',
+        image: '/assets/images/laguna_blanca.jpg',
+        imageAlt: 'Prestadores de Experiencias Catamarca',
+      };
+    }
+    if (path.startsWith('/socios/emergentes') || path === '/emergentes') {
+      return {
+        section: 'Socio Emergente',
+        description: 'Activá tu membresía emergente en el Club de Experiencias.',
         image: '/assets/images/catamarca_hero.jpg',
-        imageAlt: 'Experiencias de aventura en Catamarca',
+        imageAlt: 'Socio Emergente',
       };
     }
-    if (path.startsWith('/perfil')) {
+    if (path.startsWith('/comprobantes')) {
       return {
-        section: 'Mi perfil de socio',
+        section: 'Conciliación de Comprobantes de Pago',
         description:
-          'Consultá tus datos, comprobantes y experiencias dentro del Club de Experiencias.',
-        image: '/assets/images/logo-club-experiencias.png',
-        imageAlt: 'Club de Experiencias',
+          'Validación y control de transferencias bancarias de expediciones.',
+        image: '/assets/images/logo-admin-experiencias-club.png',
+        imageAlt: 'Comprobantes de Pago EXPERIENCIAS.CLUB',
       };
     }
     if (path.startsWith('/prestador')) {

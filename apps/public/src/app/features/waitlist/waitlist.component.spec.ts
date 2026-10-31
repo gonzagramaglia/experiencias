@@ -30,11 +30,16 @@ describe('WaitlistComponent All Desktop Modals & Navigation', () => {
     expect(expBtn.getAttribute('routerlink') || expBtn.getAttribute('href')).toBe('/experiencias');
   });
 
-  it('should have a Convertirme en Prestador link in the footer pointing to /experiencias/prestadores', () => {
-    const providerLink = fixture.nativeElement.querySelector('.footer-provider-link');
-    expect(providerLink).toBeTruthy();
-    expect(providerLink.textContent).toContain('Convertirme en Prestador');
-    expect(providerLink.getAttribute('routerlink') || providerLink.getAttribute('href')).toBe('/experiencias/prestadores');
+  it('should have a Convertirme en Prestador link in the footer pointing to /prestadores', () => {
+    const providerLinks = fixture.nativeElement.querySelectorAll('.footer-provider-link');
+    expect(providerLinks.length).toBeGreaterThanOrEqual(2);
+    const becomeProviderLink = Array.from(providerLinks).find((el: any) =>
+      el.textContent.includes('Convertirme en Prestador'),
+    ) as HTMLElement;
+    expect(becomeProviderLink).toBeTruthy();
+    expect(
+      becomeProviderLink.getAttribute('routerlink') || becomeProviderLink.getAttribute('href'),
+    ).toBe('/prestadores');
   });
 
   it('should show Iniciar Sesión button when not subscribed and link to /ingresar', () => {
